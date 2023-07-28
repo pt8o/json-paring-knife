@@ -9,6 +9,8 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
-    "jpk": "node index.js"
+    "jpk": "node ./dist/index.js",
+    "jpk-list": "node ./dist/index.js list -s ./local/en.json",
+    "jpk-pare": "node ./dist/index.js pare -s ./local/en.json -k nest.first.second.third"
   }
 }
