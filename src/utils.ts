@@ -34,6 +34,29 @@ export function deleteTerminalEntry(
   if (onlyIfEmpty && Object.keys(lastObj[lastKey]).length > 0) {
     return false;
   }
+  const lastValue = lastObj[lastKey] as string;
   delete lastObj[lastKey];
-  return true;
+  return lastValue;
+}
+
+export function insertEntryFromDottedKeyString({
+  obj,
+  keyString,
+  value,
+}: {
+  obj: JsonObject;
+  keyString: string;
+  value: string;
+}) {
+  const keys = keyString.split(".");
+  const lastKey = keys.pop()!;
+  const lastObj = keys.reduce((acc: JsonObject, key: string) => {
+    if (!acc[key]) {
+      acc[key] = {};
+    }
+    return acc[key] as JsonObject;
+  }, obj);
+
+  lastObj[lastKey] = value;
+  return obj;
 }

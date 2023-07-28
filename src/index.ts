@@ -1,9 +1,14 @@
 #! /usr/bin/env node
 
 import { program } from "commander";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
-import { deleteTerminalEntry, getTerminalKeys } from "./utils";
+import {
+  deleteTerminalEntry,
+  getTerminalKeys,
+  insertEntryFromDottedKeyString,
+} from "./utils";
+import { JsonObject } from "./types";
 
 program
   .command("list")
@@ -42,9 +47,18 @@ program
       const json = JSON.parse(contents);
       const keys = keysRaw.split(",");
 
+      const entriesToMigrate: JsonObject = {};
+
       try {
         keys.forEach((key) => {
-          deleteTerminalEntry(json, key);
+          const deletedValue = deleteTerminalEntry(json, key);
+          if (deletedValue === false) return;
+
+          insertEntryFromDottedKeyString({
+            obj: entriesToMigrate,
+            keyString: key,
+            value: deletedValue,
+          });
 
           // iterate through parent, delete parent if empty
           const keys = key.split(".");
@@ -52,11 +66,14 @@ program
             const keyString = keys.slice(0, i).join(".");
             deleteTerminalEntry(json, keyString, true);
           }
-          console.log(JSON.stringify(json));
+          console.log(JSON.stringify(json, null, 2));
         });
       } catch (err) {
         console.error(err);
       }
+
+      await writeFile(source, JSON.stringify(json, null, 2));
+      console.log(JSON.stringify(entriesToMigrate, null, 2));
     } catch (err) {
       console.error(err);
     }

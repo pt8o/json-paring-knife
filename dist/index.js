@@ -36,20 +36,31 @@ commander_1.program
         const contents = await (0, promises_1.readFile)(source, { encoding: "utf8" });
         const json = JSON.parse(contents);
         const keys = keysRaw.split(",");
+        const entriesToMigrate = {};
         try {
             keys.forEach((key) => {
+                const deletedValue = (0, utils_1.deleteTerminalEntry)(json, key);
+                if (deletedValue === false)
+                    return;
+                (0, utils_1.insertEntryFromDottedKeyString)({
+                    obj: entriesToMigrate,
+                    keyString: key,
+                    value: deletedValue,
+                });
                 // iterate through parent, delete parent if empty
                 const keys = key.split(".");
                 for (let i = keys.length - 1; i > 0; i--) {
                     const keyString = keys.slice(0, i).join(".");
                     (0, utils_1.deleteTerminalEntry)(json, keyString, true);
                 }
-                console.log(JSON.stringify(json));
+                console.log(JSON.stringify(json, null, 2));
             });
         }
         catch (err) {
             console.error(err);
         }
+        await (0, promises_1.writeFile)(source, JSON.stringify(json, null, 2));
+        console.log(JSON.stringify(entriesToMigrate, null, 2));
     }
     catch (err) {
         console.error(err);
