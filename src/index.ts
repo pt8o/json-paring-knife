@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import { program } from "commander";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, readdir } from "node:fs/promises";
 
 import {
   deleteTerminalEntry,
@@ -42,48 +42,59 @@ program
   .action(
     async (options: { source: string; destination: string; keys: string }) => {
       const { source, destination, keys: commaSeparatedKeys } = options;
+      const keys = commaSeparatedKeys.split(",");
 
-      const filename = source.split("/").pop();
-      const dest = destination.endsWith("/") ? destination : `${destination}/`;
+      const sourceArray = source.split("/");
+      sourceArray.pop();
+      const sourceDir = `${sourceArray.join("/")}/`;
+      const destDir = destination.endsWith("/")
+        ? destination
+        : `${destination}/`;
 
-      try {
-        const contents = await readFile(source, { encoding: "utf8" });
-        const json = JSON.parse(contents);
-        const keys = commaSeparatedKeys.split(",");
+      const files = (await readdir(sourceDir)).filter((file) =>
+        file.endsWith(".json")
+      );
 
-        const entriesToMigrate: JsonObject = {};
+      files.forEach(async (filename) => {
+        const sourceFile = `${sourceDir}${filename}`;
+        const destFile = `${destDir}${filename}`;
 
         try {
-          keys.forEach((key) => {
-            const deletedValue = deleteTerminalEntry(json, key);
-            if (deletedValue === false) return;
-
-            insertEntryFromDottedKeyString({
-              obj: entriesToMigrate,
-              keyString: key,
-              value: deletedValue,
-            });
-
-            // iterate through parent, delete parent if empty
-            const keys = key.split(".");
-            for (let i = keys.length - 1; i > 0; i--) {
-              const keyString = keys.slice(0, i).join(".");
-              deleteTerminalEntry(json, keyString, true);
-            }
-            console.log(JSON.stringify(json, null, 2));
+          const contents = await readFile(sourceFile, {
+            encoding: "utf8",
           });
+          const sourceObj = JSON.parse(contents);
+          const destObj: JsonObject = {};
+
+          try {
+            keys.forEach((key) => {
+              const deletedValue = deleteTerminalEntry(sourceObj, key);
+              if (deletedValue === false) return;
+
+              insertEntryFromDottedKeyString({
+                obj: destObj,
+                keyString: key,
+                value: deletedValue,
+              });
+
+              // recursively iterate through parents, delete if empty
+              const keys = key.split(".");
+              for (let i = keys.length - 1; i > 0; i--) {
+                const keyString = keys.slice(0, i).join(".");
+                deleteTerminalEntry(sourceObj, keyString, true);
+              }
+            });
+          } catch (err) {
+            console.error(err);
+            return;
+          }
+
+          await writeFile(sourceFile, JSON.stringify(sourceObj, null, 2));
+          await writeFile(destFile, JSON.stringify(destObj, null, 2));
         } catch (err) {
           console.error(err);
         }
-
-        await writeFile(source, JSON.stringify(json, null, 2));
-        await writeFile(
-          `${dest}${filename}`,
-          JSON.stringify(entriesToMigrate, null, 2)
-        );
-      } catch (err) {
-        console.error(err);
-      }
+      });
     }
   );
 

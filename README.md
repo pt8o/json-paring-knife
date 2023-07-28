@@ -7,13 +7,13 @@ The intent of this tool is to move identical keys across multiple JSON files to 
 ## Requirements
 
 - [x] list all terminal keys (i.e. recursive search) in a JSON file
-- [ ] parse one JSON file and move the identified keys to new folder
+- [x] parse one JSON file and move the identified keys to new folder
 - [x] if deleted keys leave behind an empty entry in the source JSON, delete it
-- [ ] parse entire folder and move identified keys to new folder
-- [ ] use `inquirer` to interactively select keys within CLI
+- [x] parse entire folder and move identified keys to new folder
 
 ### Stretch goals
 
+- [ ] use `inquirer` to interactively select keys within CLI
 - [ ] tests
 - [x] use a packager so we can split/import functions, use TS
 - [ ] allow user to `reroot` keys (i.e. not migrate unnecessary nesting)

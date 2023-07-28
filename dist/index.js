@@ -29,40 +29,51 @@ commander_1.program
     .requiredOption("-k, --keys <keys>", "keys to delete (comma separated strings)")
     .action(async (options) => {
     const { source, destination, keys: commaSeparatedKeys } = options;
-    const filename = source.split("/").pop();
-    const dest = destination.endsWith("/") ? destination : `${destination}/`;
-    try {
-        const contents = await (0, promises_1.readFile)(source, { encoding: "utf8" });
-        const json = JSON.parse(contents);
-        const keys = commaSeparatedKeys.split(",");
-        const entriesToMigrate = {};
+    const keys = commaSeparatedKeys.split(",");
+    const sourceArray = source.split("/");
+    sourceArray.pop();
+    const sourceDir = `${sourceArray.join("/")}/`;
+    const destDir = destination.endsWith("/")
+        ? destination
+        : `${destination}/`;
+    const files = (await (0, promises_1.readdir)(sourceDir)).filter((file) => file.endsWith(".json"));
+    files.forEach(async (filename) => {
+        const sourceFile = `${sourceDir}${filename}`;
+        const destFile = `${destDir}${filename}`;
         try {
-            keys.forEach((key) => {
-                const deletedValue = (0, utils_1.deleteTerminalEntry)(json, key);
-                if (deletedValue === false)
-                    return;
-                (0, utils_1.insertEntryFromDottedKeyString)({
-                    obj: entriesToMigrate,
-                    keyString: key,
-                    value: deletedValue,
-                });
-                // iterate through parent, delete parent if empty
-                const keys = key.split(".");
-                for (let i = keys.length - 1; i > 0; i--) {
-                    const keyString = keys.slice(0, i).join(".");
-                    (0, utils_1.deleteTerminalEntry)(json, keyString, true);
-                }
-                console.log(JSON.stringify(json, null, 2));
+            const contents = await (0, promises_1.readFile)(sourceFile, {
+                encoding: "utf8",
             });
+            const sourceObj = JSON.parse(contents);
+            const destObj = {};
+            try {
+                keys.forEach((key) => {
+                    const deletedValue = (0, utils_1.deleteTerminalEntry)(sourceObj, key);
+                    if (deletedValue === false)
+                        return;
+                    (0, utils_1.insertEntryFromDottedKeyString)({
+                        obj: destObj,
+                        keyString: key,
+                        value: deletedValue,
+                    });
+                    // recursively iterate through parents, delete if empty
+                    const keys = key.split(".");
+                    for (let i = keys.length - 1; i > 0; i--) {
+                        const keyString = keys.slice(0, i).join(".");
+                        (0, utils_1.deleteTerminalEntry)(sourceObj, keyString, true);
+                    }
+                });
+            }
+            catch (err) {
+                console.error(err);
+                return;
+            }
+            await (0, promises_1.writeFile)(sourceFile, JSON.stringify(sourceObj, null, 2));
+            await (0, promises_1.writeFile)(destFile, JSON.stringify(destObj, null, 2));
         }
         catch (err) {
             console.error(err);
         }
-        await (0, promises_1.writeFile)(source, JSON.stringify(json, null, 2));
-        await (0, promises_1.writeFile)(`${dest}${filename}`, JSON.stringify(entriesToMigrate, null, 2));
-    }
-    catch (err) {
-        console.error(err);
-    }
+    });
 });
 commander_1.program.parseAsync();
