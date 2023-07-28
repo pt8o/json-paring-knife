@@ -3,47 +3,7 @@
 import { program } from "commander";
 import { readFile } from "node:fs/promises";
 
-interface JsonObject {
-  [key: string]: string | JsonObject;
-}
-
-function getTerminalKeys(
-  obj: JsonObject,
-  accString = "",
-  accArray: string[] = []
-) {
-  const keysArray: string[][] = Object.keys(obj).map((key) => {
-    const keyString = accString ? `${accString}.${key}` : key;
-    if (typeof obj[key] === "string") {
-      return [keyString];
-    }
-    return getTerminalKeys(obj[key] as JsonObject, keyString, accArray);
-  });
-  return [...accArray, ...keysArray.flat()];
-}
-
-function deleteTerminalKey(
-  obj: JsonObject,
-  keyString: string,
-  onlyIfEmpty = false
-) {
-  const startingKeys = keyString.split(".");
-  const lastKey = startingKeys.pop()!;
-  const lastObj = startingKeys.reduce((acc: JsonObject, key: string) => {
-    // since we've popped the last key, we know that the final value here is an object
-    return acc[key] as JsonObject;
-  }, obj);
-
-  if (!lastKey || !lastObj[lastKey]) {
-    throw new Error(`Did not find key "${keyString}"`);
-  }
-
-  if (onlyIfEmpty && Object.keys(lastObj[lastKey]).length > 0) {
-    return false;
-  }
-  delete lastObj[lastKey];
-  return true;
-}
+import { deleteTerminalEntry, getTerminalKeys } from "./utils";
 
 program
   .command("list")
@@ -84,13 +44,11 @@ program
 
       try {
         keys.forEach((key) => {
-          deleteTerminalKey(json, key);
-
           // iterate through parent, delete parent if empty
           const keys = key.split(".");
           for (let i = keys.length - 1; i > 0; i--) {
             const keyString = keys.slice(0, i).join(".");
-            deleteTerminalKey(json, keyString, true);
+            deleteTerminalEntry(json, keyString, true);
           }
 
           console.log(JSON.stringify(json));
