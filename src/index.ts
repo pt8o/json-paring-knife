@@ -44,13 +44,14 @@ program
 
       try {
         keys.forEach((key) => {
+          deleteTerminalEntry(json, key);
+
           // iterate through parent, delete parent if empty
           const keys = key.split(".");
           for (let i = keys.length - 1; i > 0; i--) {
             const keyString = keys.slice(0, i).join(".");
             deleteTerminalEntry(json, keyString, true);
           }
-
           console.log(JSON.stringify(json));
         });
       } catch (err) {
