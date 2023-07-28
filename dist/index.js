@@ -9,14 +9,20 @@ commander_1.program.version(version, "-v, -V, --version", "output the current ve
 commander_1.program
     .command("list")
     .description("list all the keys in the file")
-    .requiredOption("-s, --source <source>", "source file to read")
+    .requiredOption("-s, --source <source>", "source file/folder to read")
     .action(async (options) => {
     const { source } = options;
+    let sourceFile = source;
+    if (!source.endsWith(".json")) {
+        const sourceDir = source.endsWith("/") ? source : `${source}/`;
+        const firstFile = (await (0, promises_1.readdir)(sourceDir)).find((file) => file.endsWith(".json"));
+        sourceFile = `${sourceDir}${firstFile}`;
+    }
     try {
-        const contents = await (0, promises_1.readFile)(source, { encoding: "utf8" });
+        const contents = await (0, promises_1.readFile)(sourceFile, { encoding: "utf8" });
         const json = JSON.parse(contents);
         const allKeys = (0, utils_1.getTerminalKeys)(json);
-        console.log("All keys in the file:");
+        console.log(`All keys in the file ${sourceFile}:`);
         console.log(`  ${allKeys.join("\n  ")}`);
     }
     catch (err) {
@@ -25,20 +31,27 @@ commander_1.program
 });
 commander_1.program
     .command("pare")
-    .description("delete --keys from --source file, save in --destination folder")
-    .requiredOption("-s, --source <source>", "source file to read")
+    .description("delete `keys` from JSON files in the `source` folder, save in `destination` folder")
+    .requiredOption("-s, --source <source>", "source file/folder to read")
     .requiredOption("-d, --destination <destination>", "destination folder to write")
     .requiredOption("-k, --keys <keys>", "keys to delete (comma separated strings)")
     .action(async (options) => {
     const { source, destination, keys: commaSeparatedKeys } = options;
     const keys = commaSeparatedKeys.split(",");
-    const sourceArray = source.split("/");
-    sourceArray.pop();
-    const sourceDir = `${sourceArray.join("/")}/`;
-    const destDir = destination.endsWith("/")
-        ? destination
-        : `${destination}/`;
-    const files = (await (0, promises_1.readdir)(sourceDir)).filter((file) => file.endsWith(".json"));
+    let files = [];
+    let sourceDir = "";
+    let destDir = "";
+    destDir = destination.endsWith("/") ? destination : `${destination}/`;
+    if (source.endsWith(".json")) {
+        const sourceArray = source.split("/");
+        const file = sourceArray.pop();
+        files = [file];
+        sourceDir = `${sourceArray.join("/")}/`;
+    }
+    else {
+        sourceDir = source.endsWith("/") ? source : `${source}/`;
+        files = (await (0, promises_1.readdir)(sourceDir)).filter((file) => file.endsWith(".json"));
+    }
     files.forEach(async (filename) => {
         const sourceFile = `${sourceDir}${filename}`;
         const destFile = `${destDir}${filename}`;
