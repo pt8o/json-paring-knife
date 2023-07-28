@@ -13,22 +13,21 @@ function getTerminalKeys(obj, accString = "", accArray = []) {
     });
     return [...accArray, ...keysArray.flat()];
 }
-function deleteTerminalKey(obj, key) {
-    const keysArray = key.split(".");
-    const lastKey = keysArray.pop();
-    Object.entries(obj).forEach(([key, value]) => {
-        if (typeof value === "object") {
-            deleteTerminalKey(value, key);
-        }
-    });
-    const lastObj = keysArray.reduce((acc, key) => {
+function deleteTerminalKey(obj, keyString, onlyIfEmpty = false) {
+    const startingKeys = keyString.split(".");
+    const lastKey = startingKeys.pop();
+    const lastObj = startingKeys.reduce((acc, key) => {
         // since we've popped the last key, we know that the final value here is an object
         return acc[key];
     }, obj);
     if (!lastKey || !lastObj[lastKey]) {
-        throw new Error(`Did not find key "${key}"`);
+        throw new Error(`Did not find key "${keyString}"`);
+    }
+    if (onlyIfEmpty && Object.keys(lastObj[lastKey]).length > 0) {
+        return false;
     }
     delete lastObj[lastKey];
+    return true;
 }
 commander_1.program
     .command("list")
@@ -65,6 +64,12 @@ commander_1.program
         try {
             keys.forEach((key) => {
                 deleteTerminalKey(json, key);
+                // iterate through parent, delete parent if empty
+                const keys = key.split(".");
+                for (let i = keys.length - 1; i > 0; i--) {
+                    const keyString = keys.slice(0, i).join(".");
+                    deleteTerminalKey(json, keyString, true);
+                }
                 console.log(JSON.stringify(json));
             });
         }
