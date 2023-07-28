@@ -25,17 +25,16 @@ commander_1.program
     .command("pare")
     .description("delete --keys from --source file, save in --destination folder")
     .requiredOption("-s, --source <source>", "source file to read")
-    // .requiredOption(
-    //   "-d, --destination <destination>",
-    //   "destination folder to write"
-    // )
+    .requiredOption("-d, --destination <destination>", "destination folder to write")
     .requiredOption("-k, --keys <keys>", "keys to delete (comma separated strings)")
     .action(async (options) => {
-    const { source, keys: keysRaw } = options;
+    const { source, destination, keys: commaSeparatedKeys } = options;
+    const filename = source.split("/").pop();
+    const dest = destination.endsWith("/") ? destination : `${destination}/`;
     try {
         const contents = await (0, promises_1.readFile)(source, { encoding: "utf8" });
         const json = JSON.parse(contents);
-        const keys = keysRaw.split(",");
+        const keys = commaSeparatedKeys.split(",");
         const entriesToMigrate = {};
         try {
             keys.forEach((key) => {
@@ -60,7 +59,7 @@ commander_1.program
             console.error(err);
         }
         await (0, promises_1.writeFile)(source, JSON.stringify(json, null, 2));
-        console.log(JSON.stringify(entriesToMigrate, null, 2));
+        await (0, promises_1.writeFile)(`${dest}${filename}`, JSON.stringify(entriesToMigrate, null, 2));
     }
     catch (err) {
         console.error(err);
