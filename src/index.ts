@@ -10,6 +10,9 @@ import {
 } from "./utils";
 import { JsonObject } from "./types";
 
+const { version } = require("../package.json");
+program.version(version, "-v, -V, --version", "output the current version");
+
 program
   .command("list")
   .description("list all the keys in the file")

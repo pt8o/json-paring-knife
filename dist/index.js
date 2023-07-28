@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = require("commander");
 const promises_1 = require("node:fs/promises");
 const utils_1 = require("./utils");
+const { version } = require("../package.json");
+commander_1.program.version(version, "-v, -V, --version", "output the current version");
 commander_1.program
     .command("list")
     .description("list all the keys in the file")
