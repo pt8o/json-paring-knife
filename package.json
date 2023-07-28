@@ -11,6 +11,7 @@
   "scripts": {
     "jpk": "node ./dist/index.js",
     "jpk-list": "node ./dist/index.js list -s ./local/en.json",
-    "jpk-pare": "node ./dist/index.js pare -s ./local/en.json -k nest.first.second.third"
+    "jpk-pare": "node ./dist/index.js pare -s ./local/en.json -k 1,2.c,4,5.b.i,5.b.iii",
+    "jpk-reset": "cp ./local/base/* ./local/"
   }
 }
