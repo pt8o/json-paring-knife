@@ -4,6 +4,10 @@
   "dependencies": {
     "commander": "^11.0.0"
   },
+  "devDependencies": {
+    "@types/node": "^20.4.5",
+    "typescript": "^5.1.6"
+  },
   "scripts": {
     "jpk": "node index.js"
   }

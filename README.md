@@ -13,4 +13,4 @@ The intent of this tool is to move identical keys across multiple JSON files to 
 - [ ] if destination files exist, merge keys with existing, rather than overwriting
 - [ ] use `inquirer` to interactively select keys within CLI
 - [ ] tests
-- [ ] use a packager so we can split/import functions
+- [x] use a packager so we can split/import functions, use TS
