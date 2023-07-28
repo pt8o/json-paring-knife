@@ -1,6 +1,6 @@
 {
   "name": "json-paring-knife",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "dependencies": {
     "commander": "^11.0.0"
   },
@@ -10,5 +10,9 @@
   },
   "scripts": {
     "jpk": "node ./dist/index.js"
+  },
+  "bin": {
+    "json-paring-knife": "./dist/index.js",
+    "jpk": "./dist/index.js"
   }
 }
