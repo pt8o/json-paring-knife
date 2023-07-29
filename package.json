@@ -2,7 +2,7 @@
   "name": "json-paring-knife",
   "author": "Lucas Huang",
   "description": "A command line tool for paring keys out of JSON files and writing them to new files",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MPL-2.0",
   "repository": {
     "type": "git",
