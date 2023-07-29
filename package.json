@@ -9,6 +9,17 @@
     "url": "https://github.com/pt8o/json-paring-knife.git"
   },
   "homepage": "https://github.com/pt8o/json-paring-knife",
+  "keywords": [
+    "json",
+    "parse",
+    "cli",
+    "command line",
+    "i18n",
+    "l10n",
+    "translation",
+    "internationalization",
+    "localization"
+  ],
   "dependencies": {
     "commander": "^11.0.0"
   },
