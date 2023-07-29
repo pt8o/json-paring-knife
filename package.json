@@ -9,6 +9,7 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
+    "json-paring-knife": "node ./dist/index.js",
     "jpk": "node ./dist/index.js"
   },
   "bin": {
