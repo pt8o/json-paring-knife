@@ -1,6 +1,14 @@
 {
   "name": "json-paring-knife",
+  "author": "Lucas Huang",
+  "description": "A command line tool for paring keys out of JSON files and writing them to new files",
   "version": "1.0.0",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pt8o/json-paring-knife.git"
+  },
+  "homepage": "https://github.com/pt8o/json-paring-knife",
   "dependencies": {
     "commander": "^11.0.0"
   },
@@ -10,7 +18,8 @@
   },
   "scripts": {
     "json-paring-knife": "node ./dist/index.js",
-    "jpk": "node ./dist/index.js"
+    "jpk": "node ./dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
     "json-paring-knife": "./dist/index.js",
